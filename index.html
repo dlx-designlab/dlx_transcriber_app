@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DLX Transcriber & Translator</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- <uidiv> -->
+  <div id="warning">
+    <h1>Speech Recognition Speech SDK not found (microsoft.cognitiveservices.speech.sdk.bundle.js missing).</h1>
+  </div>
+  
+  <div id="content" style="display:none">
+    <h1 class="main-title">DLX Transcriber & Translator</h1>
+    
+    <div class="form-container">
+      <div class="input-row">
+        <div class="input-group" style="flex: 0 0 70%;">
+          <label for="subscriptionKey">
+            <a href="https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started" target="_blank">AZURE API Key</a>
+          </label>
+          <input id="subscriptionKey" class="modern-input" type="text" placeholder="Enter an Azure Speech API key" placeholder="Enter your Azure API key here">
+        </div>
+        
+        <div class="input-group" style="flex: 0 0 10%;">
+          <label for="serviceRegion">Region</label>
+          <input id="serviceRegion" class="modern-input" type="text" placeholder="e.g., japaneast" value="japaneast">
+        </div>
+      </div>
+      
+      <div class="input-group">
+        <label for="audioSource">Audio Source</label>
+        <select id="audioSource" class="modern-input">
+          <option value="microphone">Microphone</option>
+          <option value="browser">Browser Audio (Screen Capture)</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="button-group">
+      <button id="startRecognizeOnceAsyncButton" class="modern-button btn-primary">
+        <span class="status-indicator status-idle" id="statusIndicator"></span>
+        Start Transcription
+      </button>
+      <button id="stopRecognizeAsyncButton" class="modern-button btn-secondary" disabled>
+        Stop Transcription
+      </button>
+    </div>
+    
+    <div class="volume-container" id="volumeContainer">
+      <div class="volume-label">
+        <svg class="microphone-icon" viewBox="0 0 24 24">
+          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>
+        Microphone Level
+      </div>
+      <div class="volume-bar-container">
+        <div class="volume-bar" id="volumeBar"></div>
+      </div>
+    </div>
+    
+    <div class="results-section">
+      <div class="results-label">Transcription Results</div>
+      <textarea id="phraseDiv" class="results-textarea" placeholder="Your transcribed speech will appear here..."></textarea>
+    </div>
+  </div>
+  <!-- </uidiv> -->
+
+  <!-- <speechsdkref> -->
+  <!-- Speech SDK reference sdk. -->
+  <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+  <!-- </speechsdkref> -->
+
+  <!-- <quickstartcode> -->
+  <!-- Speech SDK USAGE -->
+  <script>
+    // status fields and start button in UI
+    var phraseDiv;
+    var startRecognizeOnceAsyncButton;
+    var stopRecognizeAsyncButton;
+
+    // subscription key and region for speech services.
+    var subscriptionKey, serviceRegion, audioSource;
+    var SpeechSDK;
+    var recognizer;
+    var isRecognizing = false;
+    var currentStream; // Store the current media stream
+    
+    // Audio context for volume detection
+    var audioContext;
+    var analyser;
+    var microphone;
+    var dataArray;
+    var volumeAnimationId;
+
+    document.addEventListener("DOMContentLoaded", function () {
+      startRecognizeOnceAsyncButton = document.getElementById("startRecognizeOnceAsyncButton");
+      stopRecognizeAsyncButton = document.getElementById("stopRecognizeAsyncButton");
+      subscriptionKey = document.getElementById("subscriptionKey");
+      serviceRegion = document.getElementById("serviceRegion");
+      audioSource = document.getElementById("audioSource");
+      phraseDiv = document.getElementById("phraseDiv");
+      const statusIndicator = document.getElementById("statusIndicator");
+
+      startRecognizeOnceAsyncButton.addEventListener("click", function () {
+        if (isRecognizing) return;
+        
+        startRecognizeOnceAsyncButton.disabled = true;
+        startRecognizeOnceAsyncButton.classList.add("loading");
+        stopRecognizeAsyncButton.disabled = false;
+        statusIndicator.className = "status-indicator status-active";
+        isRecognizing = true;
+
+        if (subscriptionKey.value === "" || subscriptionKey.value === "API Key") {
+          alert("Please enter your Azure Speech API key!");
+          resetButtons();
+          return;
+        }
+        
+        // Initialize audio context for volume detection
+        initializeVolumeDetection();
+        
+        var speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey.value, serviceRegion.value);
+        speechConfig.speechRecognitionLanguage = "ja-JP"; // Set the language to Japanese
+        
+        // Create audio configuration based on selected source
+        var audioConfig;
+        if (audioSource.value === "browser") {
+          // Use browser audio capture
+          initializeBrowserAudio().then(function(stream) {
+            currentStream = stream;
+            audioConfig = SpeechSDK.AudioConfig.fromStreamInput(stream);
+            startRecognition(speechConfig, audioConfig);
+          }).catch(function(error) {
+            console.error("Error initializing browser audio:", error);
+            alert("Failed to capture browser audio. Please try microphone instead.");
+            resetButtons();
+          });
+          return; // Exit early since we'll handle recognition in the promise
+        } else {
+          // Use microphone
+          audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+        }
+        
+        startRecognition(speechConfig, audioConfig);
+      });
+
+      function initializeBrowserAudio() {
+        return navigator.mediaDevices.getDisplayMedia({ 
+          video: true, 
+          audio: true 
+        });
+      }
+
+      function startRecognition(speechConfig, audioConfig) {
+        recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+
+        // Event for partial results (while speaking)
+        recognizer.recognizing = function (s, e) {
+          var lastLine = phraseDiv.value.split('\n');
+          lastLine[lastLine.length - 1] = e.result.text;
+          phraseDiv.value = lastLine.join('\n');
+        };
+
+        // Event for final results (when speech segment is complete)
+        recognizer.recognized = function (s, e) {
+          if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+            // Replace the last line with final result and add a new line
+            var lines = phraseDiv.value.split('\n');
+            lines[lines.length - 1] = e.result.text;
+            lines.push(''); // Add new empty line for next recognition
+            phraseDiv.value = lines.join('\n');
+            
+            // Scroll to bottom
+            phraseDiv.scrollTop = phraseDiv.scrollHeight;
+            
+            window.console.log("Recognized: " + e.result.text);
+          }
+        };
+
+        // Event for session stopped
+        recognizer.sessionStopped = function (s, e) {
+          window.console.log("Session stopped.");
+          resetButtons();
+        };
+
+        // Event for errors
+        recognizer.canceled = function (s, e) {
+          window.console.log("Recognition canceled: " + e.errorDetails);
+          if (e.reason === SpeechSDK.CancellationReason.Error) {
+            phraseDiv.value += "\nError: " + e.errorDetails + "\n";
+          }
+          resetButtons();
+        };
+
+        // Start continuous recognition
+        recognizer.startContinuousRecognitionAsync(
+          function () {
+            window.console.log("Continuous recognition started.");
+          },
+          function (err) {
+            window.console.log("Error starting recognition: " + err);
+            phraseDiv.value += "\nError starting recognition: " + err + "\n";
+            resetButtons();
+          }
+        );
+      }
+
+      stopRecognizeAsyncButton.addEventListener("click", function () {
+        if (!isRecognizing) return;
+        
+        stopRecognizeAsyncButton.disabled = true;
+        
+        if (recognizer) {
+          recognizer.stopContinuousRecognitionAsync(
+            function () {
+              window.console.log("Continuous recognition stopped.");
+              recognizer.close();
+              recognizer = undefined;
+              resetButtons();
+            },
+            function (err) {
+              window.console.log("Error stopping recognition: " + err);
+              recognizer.close();
+              recognizer = undefined;
+              resetButtons();
+            }
+          );
+        }
+      });
+
+      function resetButtons() {
+        const statusIndicator = document.getElementById("statusIndicator");
+        const volumeContainer = document.getElementById("volumeContainer");
+        
+        startRecognizeOnceAsyncButton.disabled = false;
+        startRecognizeOnceAsyncButton.classList.remove("loading");
+        stopRecognizeAsyncButton.disabled = true;
+        statusIndicator.className = "status-indicator status-idle";
+        volumeContainer.classList.remove("active");
+        isRecognizing = false;
+        
+        // Stop volume detection
+        stopVolumeDetection();
+        
+        // Clean up browser audio stream if it exists
+        if (currentStream) {
+          currentStream.getTracks().forEach(track => track.stop());
+          currentStream = null;
+        }
+      }
+
+      function initializeVolumeDetection() {
+        var stream;
+        if (audioSource.value === "browser" && currentStream) {
+          // Use the browser audio stream for volume detection
+          stream = currentStream;
+          setupVolumeDetection(stream);
+        } else {
+          // Use microphone for volume detection
+          navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(function(micStream) {
+              setupVolumeDetection(micStream);
+            })
+            .catch(function(err) {
+              console.error('Error accessing microphone for volume detection:', err);
+            });
+        }
+      }
+
+      function setupVolumeDetection(stream) {
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = audioContext.createAnalyser();
+          microphone = audioContext.createMediaStreamSource(stream);
+          
+          analyser.fftSize = 256;
+          const bufferLength = analyser.frequencyBinCount;
+          dataArray = new Uint8Array(bufferLength);
+          
+          microphone.connect(analyser);
+          
+          // Show volume container
+          document.getElementById("volumeContainer").classList.add("active");
+          
+          // Start volume monitoring
+          updateVolumeIndicator();
+        } catch (err) {
+          console.error('Error setting up volume detection:', err);
+        }
+      }
+
+      function updateVolumeIndicator() {
+        if (!analyser || !isRecognizing) return;
+        
+        analyser.getByteFrequencyData(dataArray);
+        
+        // Calculate average volume
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          sum += dataArray[i];
+        }
+        const average = sum / dataArray.length;
+        const volumePercent = Math.min(Math.round((average / 128) * 100), 100);
+        
+        // Update volume bar
+        const volumeBar = document.getElementById("volumeBar");
+        
+        volumeBar.style.width = volumePercent + "%";
+        
+        // Continue monitoring
+        volumeAnimationId = requestAnimationFrame(updateVolumeIndicator);
+      }
+
+      function stopVolumeDetection() {
+        if (volumeAnimationId) {
+          cancelAnimationFrame(volumeAnimationId);
+          volumeAnimationId = null;
+        }
+        
+        if (microphone) {
+          microphone.disconnect();
+          microphone = null;
+        }
+        
+        if (audioContext && audioContext.state !== 'closed') {
+          audioContext.close();
+          audioContext = null;
+        }
+        
+        analyser = null;
+        dataArray = null;
+      }
+
+      if (!!window.SpeechSDK) {
+        SpeechSDK = window.SpeechSDK;
+        startRecognizeOnceAsyncButton.disabled = false;
+
+        document.getElementById('content').style.display = 'block';
+        document.getElementById('warning').style.display = 'none';
+      }
+    });
+  </script>
+  <!-- </quickstartcode> -->
+</body>
+</html>
