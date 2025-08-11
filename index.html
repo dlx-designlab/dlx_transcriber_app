@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css">
-</head>
+  </head>
 <body>
   <!-- <uidiv> -->
   <div id="warning">
@@ -14,72 +14,79 @@
   
   <div id="content" style="display:none">
     <h1 class="main-title">DLX Transcriber & Translator</h1>
-    
-    <div class="form-container">
-      <div class="input-row">
-        <div class="input-group" style="flex: 0 0 40%;">
-          <label for="azureKey">
-            <a href="https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started" target="_blank">AZURE API Key</a>
-          </label>
-          <input id="azureKey" class="modern-input" type="text" placeholder="Enter an Azure Speech API key" placeholder="Your Azure API key here">
+
+    <div class="two-column">
+      <!-- Left 50%: controls and transcription -->
+      <div class="left-pane">
+        <div class="form-container">
+          <div class="input-row">
+            <div class="input-group" style="flex: 0 0 30%;">
+              <label for="azureKey">
+                <a href="https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started" target="_blank">AZURE API Key</a>
+              </label>
+              <input id="azureKey" class="modern-input" type="text" placeholder="Enter an Azure Speech API key" placeholder="Your Azure API key here">
+            </div>
+            
+            <div class="input-group" style="flex: 0 0 30%;">
+              <label for="openaiKey">
+                <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI API Key</a>
+              </label>
+              <input id="openaiKey" class="modern-input" type="text" placeholder="Enter an OpenAI API key">
+            </div>
+
+            <div class="input-group" style="flex: 0 0 10%;">
+              <label for="serviceRegion">Region</label>
+              <input id="serviceRegion" class="modern-input" type="text" placeholder="e.g., japaneast" value="japaneast">
+            </div>
+          </div>
+          
+          <div class="input-group">
+            <label for="audioSource">Audio Source</label>
+            <select id="audioSource" class="modern-input">
+              <option value="microphone">Microphone</option>
+              <option value="browser">Browser Audio (Screen Capture)</option>
+            </select>
+          </div>
         </div>
         
-        <div class="input-group" style="flex: 0 0 40%;">
-          <label for="openaiKey">
-            <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI API Key</a>
-          </label>
-          <input id="openaiKey" class="modern-input" type="text" placeholder="Enter an OpenAI API key">
+        <div class="button-group">
+          <button id="startRecognizeOnceAsyncButton" class="modern-button btn-primary">
+            <span class="status-indicator status-idle" id="statusIndicator"></span>
+            Start Transcription
+          </button>
+          <button id="stopRecognizeAsyncButton" class="modern-button btn-secondary" disabled>
+            Stop Transcription
+          </button>
+          <button id="clearOutputButton" class="modern-button btn-secondary">
+            Clear Text
+          </button>
+        </div>
+        
+        <div class="volume-container" id="volumeContainer">
+          <div class="volume-label">
+            <svg class="microphone-icon" viewBox="0 0 24 24">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c1.66 0 3 1.34 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+            Microphone Level
+          </div>
+          <div class="volume-bar-container">
+            <div class="volume-bar" id="volumeBar"></div>
+          </div>
         </div>
 
-        <div class="input-group" style="flex: 0 0 10%;">
-          <label for="serviceRegion">Region</label>
-          <input id="serviceRegion" class="modern-input" type="text" placeholder="e.g., japaneast" value="japaneast">
+        <div class="results-section">
+          <div class="results-label">Transcription</div>
+          <textarea id="phraseDiv" class="results-textarea" placeholder="Your transcribed speech will appear here..."></textarea>
         </div>
       </div>
-      
-      <div class="input-group">
-        <label for="audioSource">Audio Source</label>
-        <select id="audioSource" class="modern-input">
-          <option value="microphone">Microphone</option>
-          <option value="browser">Browser Audio (Screen Capture)</option>
-        </select>
-      </div>
-    </div>
-    
-    <div class="button-group">
-      <button id="startRecognizeOnceAsyncButton" class="modern-button btn-primary">
-        <span class="status-indicator status-idle" id="statusIndicator"></span>
-        Start Transcription
-      </button>
-      <button id="stopRecognizeAsyncButton" class="modern-button btn-secondary" disabled>
-        Stop Transcription
-      </button>
-      <button id="clearOutputButton" class="modern-button btn-secondary">
-        Clear Text
-      </button>
-    </div>
-    
-    <div class="volume-container" id="volumeContainer">
-      <div class="volume-label">
-        <svg class="microphone-icon" viewBox="0 0 24 24">
-          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-        </svg>
-        Microphone Level
-      </div>
-      <div class="volume-bar-container">
-        <div class="volume-bar" id="volumeBar"></div>
-      </div>
-    </div>
-    
-    <div class="results-grid">
-      <div class="results-section">
-        <div class="results-label">Transcription</div>
-        <textarea id="phraseDiv" class="results-textarea" placeholder="Your transcribed speech will appear here..."></textarea>
-      </div>
-      <div class="results-section">
-        <div class="results-label">Translation</div>
-        <textarea id="translationDiv" class="results-textarea" placeholder="Your translated text will appear here..."></textarea>
+
+      <!-- Right 50%: translation only -->
+      <div class="right-pane">
+        <div class="results-section">
+          <div class="results-label">Translation</div>
+          <textarea id="translationDiv" class="results-textarea" placeholder="Your translated text will appear here..."></textarea>
+        </div>
       </div>
     </div>
   </div>
