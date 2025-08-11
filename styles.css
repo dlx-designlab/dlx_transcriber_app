@@ -6,7 +6,6 @@
   --celadon: #a7d3a6;
   --ash-gray: #add2c2;
   --dark-shade: #4a5a3d;
-  --red-highlight: #ff6b6b;
 
   /* Semantic aliases */
   --bg: var(--vanilla);
@@ -17,7 +16,7 @@
   --surface-alt: var(--ash-gray);
   --border: var(--celadon);
   --accent: var(--fern-green);
-  --muted: var(--red-highlight);
+  --muted: var(--ash-gray);
   --text-primary: var(--fern-green);
   --text-secondary: var(--celadon);
 
@@ -111,14 +110,10 @@ body {
 
 .main-title {
   text-align: center;
-  color: var(--text-primary);
+  color: var(--fern-green);
   margin-bottom: 24px;
   font-weight: 300;
   font-size: 1.8rem;
-  background: linear-gradient(135deg, var(--ash-gray), var(--celadon));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .form-container {
@@ -130,7 +125,7 @@ body {
 .input-row {
   display: flex;
   gap: 16px;
-  align-items: end;
+  align-items: flex-end;
   /* https://css-tricks.com/snippets/css/a-guide-to-flexbox/ */
 }
 
@@ -139,6 +134,7 @@ body {
   flex-direction: column;
   justify-content: space-evenly;
   gap: 8px;
+  min-width: 0; /* allow children to shrink within flex/grid */
 }
 
 .input-group label {
@@ -169,6 +165,7 @@ body {
   color: var(--dark-shade);
   transition: var(--transition);
   outline: none;
+  width: 100%; /* make inputs/selects responsive */
 }
 
 .modern-input::placeholder {
@@ -189,6 +186,7 @@ select.modern-input {
   outline: none;
   cursor: pointer;
   appearance: auto;
+  width: 100%; /* allow the select to shrink with its container */
 }
 
 .modern-input:focus,
