@@ -1,14 +1,15 @@
-    // status fields and start button in UI
+// status fields and start button in UI
     var phraseDiv;
     var startRecognizeOnceAsyncButton;
     var stopRecognizeAsyncButton;
 
     // subscription key and region for speech services.
-    var subscriptionKey, serviceRegion, audioSource;
+    var azureKey, serviceRegion, audioSource;
     var SpeechSDK;
     var recognizer;
     var isRecognizing = false;
     var currentStream; // Store the current media stream
+    var fullTranscription = ""; // Accumulates all finalized recognized text
     
     // Audio context for volume detection
     var audioContext;
@@ -20,11 +21,23 @@
     document.addEventListener("DOMContentLoaded", function () {
       startRecognizeOnceAsyncButton = document.getElementById("startRecognizeOnceAsyncButton");
       stopRecognizeAsyncButton = document.getElementById("stopRecognizeAsyncButton");
-      subscriptionKey = document.getElementById("subscriptionKey");
+      azureKey = document.getElementById("azureKey");
       serviceRegion = document.getElementById("serviceRegion");
       audioSource = document.getElementById("audioSource");
       phraseDiv = document.getElementById("phraseDiv");
+      const translationDiv = document.getElementById("translationDiv");
+      const openaiKeyInput = document.getElementById("openaiKey");
+      const clearOutputButton = document.getElementById("clearOutputButton");
       const statusIndicator = document.getElementById("statusIndicator");
+
+      if (clearOutputButton) {
+        clearOutputButton.addEventListener("click", function () {
+          if (phraseDiv) phraseDiv.value = "";
+          if (translationDiv) translationDiv.value = "";
+          // Also clear the accumulated transcription context
+          fullTranscription = "";
+        });
+      }
 
       startRecognizeOnceAsyncButton.addEventListener("click", function () {
         if (isRecognizing) return;
@@ -35,7 +48,7 @@
         statusIndicator.className = "status-indicator status-active";
         isRecognizing = true;
 
-        if (subscriptionKey.value === "" || subscriptionKey.value === "API Key") {
+        if (azureKey.value === "" || azureKey.value === "API Key") {
           alert("Please enter your Azure Speech API key!");
           resetButtons();
           return;
@@ -44,7 +57,7 @@
         // Initialize audio context for volume detection
         initializeVolumeDetection();
         
-        var speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey.value, serviceRegion.value);
+        var speechConfig = SpeechSDK.SpeechConfig.fromSubscription(azureKey.value, serviceRegion.value);
         speechConfig.speechRecognitionLanguage = "ja-JP"; // Set the language to Japanese
         
         // Create audio configuration based on selected source
@@ -76,6 +89,67 @@
         });
       }
 
+      async function translateText(japaneseText, contextText) {
+        try {
+          if (!openaiKeyInput || !openaiKeyInput.value) {
+            // No OpenAI key provided;
+            console.warn("No OpenAI API key provided; skipping translation.");
+            return;
+          }
+          const apiKey = openaiKeyInput.value.trim();
+          if (!apiKey) return;
+
+          // Build prompt with optional context before the latest segment
+          const userContent = contextText && contextText.trim().length
+            ? "Context (previous transcription):\n" + contextText +
+              "\n\nTranslate this New segment:\n" + japaneseText
+            : "Translate the following Text. Return only the translation.\n\n" + japaneseText;
+
+          console.log("Sending for translation:\n", userContent);
+          
+          // Send translation request to OpenAI API
+          const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + apiKey
+            },
+            body: JSON.stringify({
+              model: "gpt-5-mini",
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are a professional translator assistant. Expert in Translating presentations, speeches and meetings. " +
+                    "Translate from Japanese to natural, fluent English. Do not add any additional information or comments. " +
+                    "Return only the translation."
+                },
+                { role: "user", content: userContent }
+              ]
+            })
+          });
+
+          if (!response.ok) {
+            const errText = await response.text();
+            console.error("OpenAI API error:", errText);
+            return;
+          }
+
+          const data = await response.json();
+          const translated = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
+            ? data.choices[0].message.content.trim()
+            : "";
+          if (translated && translationDiv) {
+            // Append translated text with a blank line for readability
+            const needsNewline = translationDiv.value && !translationDiv.value.endsWith("\n");
+            translationDiv.value += (needsNewline ? "\n" : "") + translated + "\n\n";
+            translationDiv.scrollTop = translationDiv.scrollHeight;
+          }
+        } catch (err) {
+          console.error("Translation failed:", err);
+        }
+      }
+
       function startRecognition(speechConfig, audioConfig) {
         recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
 
@@ -99,7 +173,14 @@
             phraseDiv.scrollTop = phraseDiv.scrollHeight;
             
             window.console.log("Recognized: " + e.result.text);
+
+            // Send final recognized text for translation with context
+            translateText(e.result.text, fullTranscription);
+
+            // After translation request, append latest text to the accumulator
+            fullTranscription += (fullTranscription ? "\n" : "") + e.result.text;
           }
+        
         };
 
         // Event for session stopped

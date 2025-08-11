@@ -17,13 +17,20 @@
     
     <div class="form-container">
       <div class="input-row">
-        <div class="input-group" style="flex: 0 0 70%;">
-          <label for="subscriptionKey">
+        <div class="input-group" style="flex: 0 0 40%;">
+          <label for="azureKey">
             <a href="https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started" target="_blank">AZURE API Key</a>
           </label>
-          <input id="subscriptionKey" class="modern-input" type="text" placeholder="Enter an Azure Speech API key" placeholder="Enter your Azure API key here">
+          <input id="azureKey" class="modern-input" type="text" placeholder="Enter an Azure Speech API key" placeholder="Your Azure API key here">
         </div>
         
+        <div class="input-group" style="flex: 0 0 40%;">
+          <label for="openaiKey">
+            <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI API Key</a>
+          </label>
+          <input id="openaiKey" class="modern-input" type="text" placeholder="Enter an OpenAI API key">
+        </div>
+
         <div class="input-group" style="flex: 0 0 10%;">
           <label for="serviceRegion">Region</label>
           <input id="serviceRegion" class="modern-input" type="text" placeholder="e.g., japaneast" value="japaneast">
@@ -47,6 +54,9 @@
       <button id="stopRecognizeAsyncButton" class="modern-button btn-secondary" disabled>
         Stop Transcription
       </button>
+      <button id="clearOutputButton" class="modern-button btn-secondary">
+        Clear Text
+      </button>
     </div>
     
     <div class="volume-container" id="volumeContainer">
@@ -62,9 +72,15 @@
       </div>
     </div>
     
-    <div class="results-section">
-      <div class="results-label">Transcription Results</div>
-      <textarea id="phraseDiv" class="results-textarea" placeholder="Your transcribed speech will appear here..."></textarea>
+    <div class="results-grid">
+      <div class="results-section">
+        <div class="results-label">Transcription</div>
+        <textarea id="phraseDiv" class="results-textarea" placeholder="Your transcribed speech will appear here..."></textarea>
+      </div>
+      <div class="results-section">
+        <div class="results-label">Translation</div>
+        <textarea id="translationDiv" class="results-textarea" placeholder="Your translated text will appear here..."></textarea>
+      </div>
     </div>
   </div>
   <!-- </uidiv> -->
