@@ -1,0 +1,58 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+__MACOSX/
+
+# Node / npm / pnpm / yarn (in case a static server/tools get added)
+node_modules/
+.npm/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env and keys (do not commit secrets)
+.env
+.env.*
+*.env
+apikeys.txt
+*.key
+*.pem
+
+# Editor & OS junk
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+Thumbs.db
+.DS_Store?
+
+# Python local server artifacts
+__pycache__/
+*.py[cod]
+
+# Coverage / reports
+coverage/
+.nyc_output/
+
+# Build/Dist (if added later)
+dist/
+build/
+.out/
+.tmp/
+
+# VS Code
+.vscode/
+.history/
+
+# Local server caches
+.http-server-cache/
