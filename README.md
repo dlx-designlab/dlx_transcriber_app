@@ -1,43 +1,62 @@
 # 🎙️ DLX Transcriber & Translator 🌐
 
-A simple web-based application for real-time speech transcription using the Azure Speech SDK.
+A web app for real-time transcription (Azure Speech) and translation (OpenAI), with one-click posting to Google Docs.
 
 ## ✨ Features
 
-*   🎤 Transcribe speech from a microphone or browser audio.
-*   🇯🇵 Supports Japanese language transcription.
-*   📊 Visual feedback for microphone volume level.
+- Live transcription via Azure Speech SDK (Japanese input configured)
+- Translation via OpenAI Chat Completions (appends each segment to the right pane)
+- Google login (OAuth) and one-click “Post” of the translation to a Google Doc
+- Auto-post: when logged in, each new translated segment is posted to the selected Google Doc
+- Editable Google Doc ID field to target a different document on the fly
 
-## 🚀 How to Use
 
-1.  Clone this repository.
-2.  From the project directory, run a simple local web server.
-3.  Open `index.html` in a web browser (e.g., by navigating to `http://localhost:8000` - see how to launch a server below).
-4.  Enter your Azure Speech API key and the corresponding region.
-5.  Select the audio source (Microphone or Browser Audio).
-6.  Click "Start Transcription" to begin.
-7.  The transcribed text will appear in the text area.
+## 🌐 Hosted
 
-**Note:** This app needs to run on a localhost server or be deployed on a cloud server to work.
+You can access the app via GitHub Pages:
+https://dlx-designlab.github.io/dlx_transcriber_app/
 
-### 🖥️ Running a Local Server
+## 🔑 Credentials
 
-**🐍 Using Python:**
-If you have Python 3, run the following command in your terminal:
+- Azure Speech API Key and Region
+- OpenAI API Key
+- Google OAuth Client ID and Google Doc ID
+
+These credentials can be obtained from a DLX IT administrator. The Google Doc ID can be pasted into the “Google Doc ID” field to override the default at runtime.
+
+## 🚀 Usage
+
+1. Open the app (locally or via GitHub Pages).
+2. Enter your Azure Speech API key and region.
+3. Optionally enter your OpenAI API key for translation.
+4. Choose the audio source (Microphone or Browser Audio).
+5. Click START to begin transcription; STOP to end; Clear Text to reset both panes.
+6. For Google Docs posting:
+	- Click “Login DLX Gmail” and complete the Google sign-in.
+	- (Optional) Paste a different Google Doc ID in the input for posting.
+	- Click “Post” to append the current translation, or let auto-post push each segment.
+
+Notes:
+- Browser Audio mode uses screen capture with audio permissions.
+- Auto-post requires an active Google login and edit access to the target Doc.
+
+## 🖥️ Local Development
+
+Run a simple local server from the project directory, then open the printed URL:
+
+Using Python 3:
 ```bash
 python3 -m http.server
 ```
 
-**🟩 Using Node.js:**
-If you have Node.js, you can use the `http-server` package. Run this command:
+Using Node.js:
 ```bash
 npx http-server
 ```
-This will start a server, and you can access the application at the URL provided in the terminal.
 
-## 🛠️ Technologies
+## 🛠️ Tech stack
 
-*   HTML
-*   CSS
-*   JavaScript
-*   Microsoft Azure Cognitive Services Speech SDK
+- HTML, CSS, JavaScript
+- Microsoft Azure Cognitive Services Speech SDK
+- OpenAI Chat Completions API
+- Google Docs API + Google Identity Services (OAuth)

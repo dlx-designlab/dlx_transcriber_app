@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="styles.css">
   </head>
 <body>
-  <!-- <uidiv> -->
   <div id="warning">
     <h1>Speech Recognition Speech SDK not found (microsoft.cognitiveservices.speech.sdk.bundle.js missing).</h1>
   </div>
@@ -19,85 +18,114 @@
       <!-- Left 50%: controls and transcription -->
       <div class="left-pane">
         <div class="form-container">
-          <div class="input-row">
-            <div class="input-group" style="flex: 0 0 35%;">
+          <div class="input-group flex-row">
+            <div class="input-group w-35">
               <label for="azureKey">
-                <a href="https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started" target="_blank">AZURE API Key</a>
+                <a href="https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started" target="_blank"><i class="fa-solid fa-key"></i> AZURE API</a>
               </label>
-              <input id="azureKey" class="modern-input" type="text" placeholder="Enter an Azure Speech API key" placeholder="Your Azure API key here">
+              <input id="azureKey" class="modern-input" type="text" placeholder="Enter an Azure Speech API key">
             </div>
             
-            <div class="input-group" style="flex: 0 0 35%;">
+            <div class="input-group w-35">
               <label for="openaiKey">
-                <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI API Key</a>
+                <a href="https://platform.openai.com/account/api-keys" target="_blank"><i class="fa-solid fa-key"></i> OpenAI API</a>
               </label>
               <input id="openaiKey" class="modern-input" type="text" placeholder="Enter an OpenAI API key">
             </div>
 
-            <div class="input-group" style="flex: 0 0 20%;">
-              <label for="serviceRegion">Region</label>
+            <div class="input-group w-20">
+              <label for="serviceRegion"><i class="fa-solid fa-globe"></i> Region</label>
               <input id="serviceRegion" class="modern-input" type="text" placeholder="e.g., japaneast" value="japaneast">
             </div>
           </div>
           
           <div class="input-group">
-            <label for="audioSource">Audio Source</label>
+            <label for="audioSource"><i class="fa-solid fa-headset"></i> Audio Source</label>
             <select id="audioSource" class="modern-input">
               <option value="microphone">Microphone</option>
               <option value="browser">Browser Audio (Screen Capture)</option>
             </select>
           </div>
-        </div>
-        
-        <div class="button-group">
-          <button id="startRecognizeOnceAsyncButton" class="modern-button btn-primary">
-            <span class="status-indicator status-idle" id="statusIndicator"></span>
-            Start Transcription
-          </button>
-          <button id="stopRecognizeAsyncButton" class="modern-button btn-secondary" disabled>
-            Stop Transcription
-          </button>
-          <button id="clearOutputButton" class="modern-button btn-secondary">
-            Clear Text
-          </button>
-        </div>
-        
-        <div class="volume-container" id="volumeContainer">
-          <div class="volume-label">
-            <svg class="microphone-icon" viewBox="0 0 24 24">
-              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c1.66 0 3 1.34 3 3z"/>
-              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-            </svg>
-            Microphone Level
+          
+          <div class="button-group">
+            <button id="startRecognizeOnceAsyncButton" class="modern-button btn-primary">
+              <i class="fa-solid fa-microphone"></i>
+              START
+            </button>
+            <button id="stopRecognizeAsyncButton" class="modern-button btn-secondary" disabled>
+              <i class="fa-solid fa-microphone-slash"></i>
+              STOP
+            </button>
+            <button id="clearOutputButton" class="modern-button btn-secondary">
+              <i class="fa-solid fa-eraser"></i>
+              Clear Text
+            </button>
           </div>
-          <div class="volume-bar-container">
-            <div class="volume-bar" id="volumeBar"></div>
+          
+          <div class="volume-container" id="volumeContainer">
+            <div class="volume-label">
+              <svg class="microphone-icon" viewBox="0 0 24 24">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c1.66 0 3 1.34 3 3z"/>
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+              </svg>
+              Microphone Level
+            </div>
+            <div class="volume-bar-container">
+              <div class="volume-bar" id="volumeBar"></div>
+            </div>
           </div>
-        </div>
 
-        <div class="results-section">
-          <div class="results-label">Transcription</div>
-          <textarea id="phraseDiv" class="results-textarea" placeholder="Your transcribed speech will appear here..."></textarea>
+          <div class="results-section">
+            <div class="results-label"><i class="fa-solid fa-ear-listen"></i> Transcription</div>
+            <textarea id="phraseDiv" class="results-textarea" placeholder="Your transcribed speech will appear here..."></textarea>
+          </div>
         </div>
       </div>
-
       <!-- Right 50%: translation only -->
       <div class="right-pane">
-        <div class="results-section">
-          <div class="results-label">Translation</div>
-          <textarea id="translationDiv" class="results-textarea" placeholder="Your translated text will appear here..."></textarea>
+        
+        <div class="form-container">          
+          <!-- Post to Google Doc -->        
+          <div class="input-group flex-row gap-8">
+            <div class="input-group flex-1">
+              <label for="docIdInput"><i class="fa-solid fa-file-alt"></i> Google Doc ID</label>
+              <input id="docIdInput" class="modern-input" type="text" placeholder="Enter Google Doc ID">
+            </div>
+            <button id="authorize-button" class="modern-button btn-primary">
+              <i class="fa-solid fa-sign-in-alt"></i>
+              Login with a DLX Gmail
+            </button>
+            <button id="post-translation-button" class="modern-button btn-primary">
+              <i class="fa-solid fa-paper-plane"></i>
+              Post
+            </button>
+            <button id="signout-button" class="modern-button btn-secondary">
+              <i class="fa-solid fa-sign-out-alt"></i>
+              Logout
+            </button>
+          </div>
+
+          <!-- Translation Box -->
+          <div class="results-section">
+            <div class="results-label"><i class="fa-solid fa-language"></i> Translation</div>
+            <textarea id="translationDiv" class="results-textarea" placeholder="Your translated text will appear here..."></textarea>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <!-- </uidiv> -->
 
-  <!-- <speechsdkref> -->
+  <!-- Font Awesome -->
+  <script src="https://kit.fontawesome.com/9d94ef417f.js" crossorigin="anonymous"></script>
+  
   <!-- Speech SDK reference sdk. -->
   <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
-  <!-- </speechsdkref> -->
+
+  <!-- Google APIs integration for posting to Docs -->
+  <script src="post_to_google_docs.js"></script>
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
   <script src="app.js"></script>
-  <!-- </quickstartcode> -->
 </body>
 </html>

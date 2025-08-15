@@ -76,6 +76,13 @@ body {
   min-width: 0; /* prevent overflow in grid */
 }
 
+/* Make left pane a flex column so child can fill height */
+.left-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 @media (min-width: 900px) {
   .two-column {
     grid-template-columns: 1fr 1fr; /* 50/50 split */
@@ -88,6 +95,7 @@ body {
     flex-direction: column;
     min-height: 0; /* allow children to size */
   }
+  .left-pane .results-section,
   .right-pane .results-section {
     display: flex;
     flex-direction: column;
@@ -97,14 +105,17 @@ body {
   .right-pane .results-textarea {
     flex: 1;       /* stretch to the bottom */
     height: auto;
-    min-height: 200px; /* keep existing minimum */
+    min-height: 400px; /* keep existing minimum */
     overflow: auto;    /* scroll internally when needed */
   }
-  .left-pane .results-section {
+
+  /* Allow the first form-container in both panes to fill height */
+  .left-pane > .form-container,
+  .right-pane > .form-container {
+    flex: 1 1 auto;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    flex: 1;       /* occupy remaining height in the pane */
-    min-height: 0; /* allow textarea to grow/shrink */
   }
 }
 
@@ -117,16 +128,10 @@ body {
 }
 
 .form-container {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   margin-bottom: 24px;
-}
-
-.input-row {
-  display: flex;
-  gap: 16px;
-  align-items: flex-end;
-  /* https://css-tricks.com/snippets/css/a-guide-to-flexbox/ */
 }
 
 .input-group {
@@ -135,6 +140,25 @@ body {
   justify-content: space-evenly;
   gap: 8px;
   min-width: 0; /* allow children to shrink within flex/grid */
+}
+
+/* Utilities */
+.flex-row { display: flex; flex-direction: row; align-items: flex-end; gap: 16px; }
+.flex-1 { flex: 1 1 auto; min-width: 0; width: auto; }
+.w-35 { flex: 0 0 35%; }
+.w-20 { flex: 0 0 20%; }
+.gap-8 { gap: 8px; }
+
+/* Google Doc controls: default hidden buttons, compact sizing */
+#authorize-button,
+#signout-button,
+#post-translation-button { display: none; }
+
+#authorize-button.modern-button,
+#signout-button.modern-button,
+#post-translation-button.modern-button {
+  min-width: auto;
+  white-space: nowrap;
 }
 
 .input-group label {
@@ -199,7 +223,7 @@ select.modern-input:focus {
   display: flex;
   gap: 16px;
   justify-content: center;
-  margin: 32px 0;
+  margin: 24px 0;
   flex-wrap: wrap;
 }
 
@@ -215,6 +239,12 @@ select.modern-input:focus {
   outline: none;
   position: relative;
   overflow: hidden;
+}
+
+.modern-button .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  margin-right: 8px;
 }
 
 .modern-button::before {
@@ -260,7 +290,7 @@ select.modern-input:focus {
 .results-label {
   font-weight: 500;
   color: var(--text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -295,30 +325,7 @@ select.modern-input:focus {
 /* Keep consistent spacing for results in columns */
 .two-column .results-section { margin-top: 0; }
 
-/* Status indicator */
-.status-indicator {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 8px;
-  transition: var(--transition);
-}
-
-.status-idle {
-  background: var(--muted);
-}
-
-.status-active {
-  background: var(--accent);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
+/* removed unused pulse animation */
 
 /* Volume Indicator */
 .volume-container {
