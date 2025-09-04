@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
   phraseDiv = document.getElementById("phraseDiv");
   const translationDiv = document.getElementById("translationDiv");
   const openaiKeyInput = document.getElementById("openaiKey");
+  const openaiModelInput = document.getElementById("openaiModel");
   const clearOutputButton = document.getElementById("clearOutputButton");
 
   if (clearOutputButton) {
@@ -105,7 +106,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       console.log("Sending for translation:\n", userContent);
       
-      // Send translation request to OpenAI API
+    // Determine model (from input or default)
+    const modelName = (openaiModelInput && openaiModelInput.value.trim()) || "gpt-4o-mini";
+
+    // Send translation request to OpenAI API
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -113,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "Authorization": "Bearer " + apiKey
         },
         body: JSON.stringify({
-          model: "gpt-5-mini",
+      model: modelName,
           messages: [
             {
               role: "system",

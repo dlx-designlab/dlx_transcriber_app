@@ -145,8 +145,11 @@ body {
 /* Utilities */
 .flex-row { display: flex; flex-direction: row; align-items: flex-end; gap: 16px; }
 .flex-1 { flex: 1 1 auto; min-width: 0; width: auto; }
+.w-60 { flex: 0 0 60%; }
+.w-40 { flex: 0 0 40%; }
 .w-35 { flex: 0 0 35%; }
 .w-20 { flex: 0 0 20%; }
+.w-15 { flex: 0 0 15%; }
 .gap-8 { gap: 8px; }
 
 /* Google Doc controls: default hidden buttons, compact sizing */

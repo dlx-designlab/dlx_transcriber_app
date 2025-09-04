@@ -19,32 +19,39 @@
       <div class="left-pane">
         <div class="form-container">
           <div class="input-group flex-row">
-            <div class="input-group w-35">
+            <div class="input-group w-40">
               <label for="azureKey">
                 <a href="https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started" target="_blank"><i class="fa-solid fa-key"></i> AZURE API</a>
               </label>
               <input id="azureKey" class="modern-input" type="text" placeholder="Enter an Azure Speech API key">
             </div>
             
-            <div class="input-group w-35">
+            <div class="input-group w-40">
               <label for="openaiKey">
                 <a href="https://platform.openai.com/account/api-keys" target="_blank"><i class="fa-solid fa-key"></i> OpenAI API</a>
               </label>
               <input id="openaiKey" class="modern-input" type="text" placeholder="Enter an OpenAI API key">
             </div>
 
-            <div class="input-group w-20">
+            <div class="input-group w-15">
               <label for="serviceRegion"><i class="fa-solid fa-globe"></i> Region</label>
               <input id="serviceRegion" class="modern-input" type="text" placeholder="e.g., japaneast" value="japaneast">
             </div>
           </div>
           
-          <div class="input-group">
-            <label for="audioSource"><i class="fa-solid fa-headset"></i> Audio Source</label>
-            <select id="audioSource" class="modern-input">
-              <option value="microphone">Microphone</option>
-              <option value="browser">Browser Audio (Screen Capture)</option>
-            </select>
+          <div class="input-group flex-row">
+            <div class="input-group w-60">
+              <label for="audioSource"><i class="fa-solid fa-headset"></i> Audio Source</label>
+              <select id="audioSource" class="modern-input">
+                <option value="microphone">Microphone</option>
+                <option value="browser">Browser Audio (Screen Capture)</option>
+              </select>
+            </div>
+
+            <div class="input-group w-35">
+              <label for="openaiModel"><i class="fa-solid fa-robot"></i> OpenAI Model</label>
+              <input id="openaiModel" class="modern-input" type="text" placeholder="e.g., gpt-4o-mini" value="gpt-4o-mini">
+            </div>            
           </div>
           
           <div class="button-group">
